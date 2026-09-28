@@ -1,3 +1,4 @@
+import os
 import math
 from datetime import datetime, timedelta
 from typing import List, Dict, Any
@@ -66,6 +67,9 @@ class ForecastService:
 
     @staticmethod
     def get_forecast(lat: float, lon: float, hours: int, variable: str, location_id: str = None) -> ForecastResponseSchema:
+        if os.environ.get("USE_MOCK_DATA", "true").lower() == "false":
+            raise NotImplementedError("Open-Meteo adapter not yet implemented. Please set USE_MOCK_DATA=true.")
+            
         loc = ForecastService._find_location(lat, lon, location_id)
         
         base_temp = 30.0
@@ -87,7 +91,7 @@ class ForecastService:
             id="demo-run-001",
             initialization_time=datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ"),
             published_at=datetime.utcnow().replace(hour=1, minute=0, second=0, microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ"),
-            model_version="blend-v1"
+            model_version="blend-v1-demo"
         )
         
         summary = ForecastSummarySchema(
@@ -138,9 +142,20 @@ class ForecastService:
             ModelForecastSchema(model="BLEND", value=float(f"{base_rain*4:.1f}"), unit="mm", isEnsemble=False, isAi=False)
         ])
         
-        missing = ["GEFS"] if loc.id == "delhi" else []
+        from app.schemas.forecast import WarningItemSchema
         
-        warning = OfficialWarningSchema(active=False)
+        warning_item = WarningItemSchema(
+            id="warning-001",
+            region=loc.name,
+            type="Heavy Rainfall",
+            severity="orange",
+            valid_until=datetime.utcnow().replace(hour=18, minute=0, second=0, microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ")
+        )
+        
+        warning = OfficialWarningSchema(
+            source="IMD",
+            warnings=[warning_item] if base_rain > 10 else []
+        )
         
         return ForecastResponseSchema(
             location=loc,

@@ -49,12 +49,17 @@ export interface ForecastSummary {
   wind_speed: number;
 }
 
+export interface WarningItem {
+  id: string;
+  region: string;
+  type: string;
+  severity: string;
+  valid_until: string;
+}
+
 export interface OfficialWarning {
-  active: boolean;
-  title?: string;
-  description?: string;
-  district?: string;
-  valid_until?: string;
+  source: string;
+  warnings: WarningItem[];
 }
 
 export interface ForecastResponse {

@@ -42,12 +42,16 @@ class ForecastUncertaintySchema(BaseModel):
     class Config:
         populate_by_name = True
 
+class WarningItemSchema(BaseModel):
+    id: str
+    region: str
+    type: str
+    severity: str
+    valid_until: str
+
 class OfficialWarningSchema(BaseModel):
-    active: bool
-    title: Optional[str] = None
-    description: Optional[str] = None
-    district: Optional[str] = None
-    valid_until: Optional[str] = None
+    source: str
+    warnings: List[WarningItemSchema]
 
 class ModelForecastSchema(BaseModel):
     model: str

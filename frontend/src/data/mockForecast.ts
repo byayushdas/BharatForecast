@@ -98,14 +98,15 @@ export const getMockForecast = (locationId: string): ForecastResponse => {
       { model: "BLEND", value: parseFloat((baseRain * 4).toFixed(1)), unit: "mm", isEnsemble: false, isAi: false }
     ],
     missing_sources: locationId === "delhi" ? ["GEFS"] : [],
-    warning: location.id === "mumbai" ? {
-      active: true,
-      title: "IMD Warning",
-      description: "Heavy rainfall expected.",
-      district: location.name,
-      valid_until: new Date(new Date().getTime() + 86400000).toISOString()
-    } : {
-      active: false
+    warning: {
+      source: "IMD",
+      warnings: location.id === "mumbai" ? [{
+        id: "warning-001",
+        region: location.name,
+        type: "Heavy Rainfall",
+        severity: "orange",
+        valid_until: new Date(new Date().getTime() + 86400000).toISOString()
+      }] : []
     }
   };
 };

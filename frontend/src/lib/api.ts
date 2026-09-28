@@ -114,7 +114,7 @@ export const getOfficialWarnings = async (locationId: string): Promise<OfficialW
     return new Promise((resolve) => {
       setTimeout(() => {
         const warning = getMockForecast(locationId).warning;
-        resolve(warning || { active: false });
+        resolve(warning || { source: "IMD", warnings: [] });
       }, 400);
     });
   }

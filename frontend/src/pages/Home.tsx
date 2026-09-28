@@ -241,15 +241,18 @@ export default function Home() {
             {/* 6. Are there any official warnings? */}
             <section>
               <h2 className="text-xl font-semibold mb-4 text-text-primary">Are there any official warnings?</h2>
-              {forecast.warning?.active ? (
+              {forecast.warning && forecast.warning.warnings && forecast.warning.warnings.length > 0 ? (
                 <div className="bg-red-50 border border-red-200 text-status-danger px-5 py-4 rounded-xl flex gap-4 shadow-sm">
                   <AlertTriangle className="w-6 h-6 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="font-semibold text-base mb-1">Official {forecast.warning.title}</h4>
-                    <p className="text-sm text-red-700/90 leading-relaxed">
-                      {forecast.warning.description} Valid for {forecast.warning.district} until {new Date(forecast.warning.valid_until!).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}.
-                    </p>
-                    <div className="mt-2 text-xs font-medium uppercase tracking-wider text-red-700/70">Source: India Meteorological Department (IMD)</div>
+                    {forecast.warning.warnings.map(w => (
+                      <div key={w.id} className="mb-3 last:mb-0">
+                        <h4 className="font-semibold text-base mb-1">Official {forecast.warning!.source} Warning: {w.type}</h4>
+                        <p className="text-sm text-red-700/90 leading-relaxed">
+                          Valid for {w.region} until {new Date(w.valid_until).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}.
+                        </p>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ) : (
