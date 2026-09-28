@@ -11,6 +11,8 @@ from app.services.forecast_service import ForecastService
 
 router = APIRouter()
 
+from app.main import APIError
+
 @router.get("/forecast", response_model=ForecastResponseSchema)
 def get_forecast(
     lat: float = Query(..., ge=-90, le=90),
@@ -20,7 +22,7 @@ def get_forecast(
     location_id: str = Query(None)
 ):
     if variable.lower() not in ["rainfall", "temperature", "wind"]:
-        raise HTTPException(status_code=400, detail="UNSUPPORTED_VARIABLE")
+        raise APIError(code="UNSUPPORTED_VARIABLE", message="The requested variable is not supported.")
     
     return ForecastService.get_forecast(lat, lon, hours, variable, location_id)
 

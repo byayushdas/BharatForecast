@@ -52,8 +52,11 @@ class ForecastService:
     @staticmethod
     def _find_location(lat: float, lon: float, location_id: str = None) -> LocationSchema:
         if location_id:
-            loc = next((l for l in LOCATIONS if l["id"] == location_id), LOCATIONS[0])
-            return LocationSchema(**loc)
+            loc_data = next((l for l in LOCATIONS if l["id"] == location_id), None)
+            if not loc_data:
+                from app.main import APIError
+                raise APIError(code="LOCATION_NOT_FOUND", message=f"No forecast data is available for location ID: {location_id}", status_code=404)
+            return LocationSchema(**loc_data)
             
         # simple nearest neighbor
         best_loc = LOCATIONS[0]
