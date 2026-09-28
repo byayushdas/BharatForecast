@@ -6,7 +6,7 @@ router = APIRouter()
 
 from app.main import APIError
 
-@router.get("/compare", response_model=ModelComparisonResponseSchema)
+@router.get("/compare", response_model=ModelComparisonResponseSchema, summary="Compare source forecasts with the Bharat Blend.")
 def get_model_comparison(
     location_id: str = Query(...),
     variable: str = Query("rainfall")

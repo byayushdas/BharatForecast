@@ -13,7 +13,7 @@ router = APIRouter()
 
 from app.main import APIError
 
-@router.get("/forecast", response_model=ForecastResponseSchema)
+@router.get("/forecast", response_model=ForecastResponseSchema, summary="Retrieve the blended forecast for a location.")
 def get_forecast(
     lat: float = Query(..., ge=-90, le=90),
     lon: float = Query(..., ge=-180, le=180),
@@ -26,21 +26,21 @@ def get_forecast(
     
     return ForecastService.get_forecast(lat, lon, hours, variable, location_id)
 
-@router.get("/locations", response_model=List[LocationSchema])
+@router.get("/locations", response_model=List[LocationSchema], summary="Search and retrieve supported forecast locations.")
 def get_locations(query: str = None):
     return ForecastService.get_locations(query)
 
-@router.get("/weights", response_model=Dict[str, float])
+@router.get("/weights", response_model=Dict[str, float], summary="Retrieve model contribution weights for a location.")
 def get_weights(location_id: str, variable: str):
     # For now, return mock weights directly by looking up the mock forecast
     forecast = ForecastService.get_forecast(0, 0, 120, variable, location_id)
     return forecast.source_weights
 
-@router.get("/official-warnings", response_model=OfficialWarningSchema)
+@router.get("/official-warnings", response_model=OfficialWarningSchema, summary="Retrieve official IMD warnings for a location.")
 def get_official_warnings(location_id: str):
     forecast = ForecastService.get_forecast(0, 0, 120, "rainfall", location_id)
     return forecast.warning
 
-@router.get("/runs/latest", response_model=LatestRunResponseSchema)
+@router.get("/runs/latest", response_model=LatestRunResponseSchema, summary="Retrieve the latest forecast run status.")
 def get_latest_run():
     return ForecastService.get_latest_run()

@@ -4,7 +4,7 @@ import os
 
 router = APIRouter()
 
-@router.get("/health", response_model=HealthResponseSchema)
+@router.get("/health", response_model=HealthResponseSchema, summary="Check API service health.")
 def check_health():
     return HealthResponseSchema(
         status="ok",
