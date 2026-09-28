@@ -92,3 +92,19 @@ class LatestRunResponseSchema(BaseModel):
     sources_available: int
     sources_expected: int
     status: str
+
+class VerificationMetricsSchema(BaseModel):
+    mae: Optional[float] = Field(None, description="Mean Absolute Error")
+    rmse: Optional[float] = Field(None, description="Root Mean Square Error")
+    bias: Optional[float] = Field(None, description="Bias")
+    brier_score: Optional[float] = Field(None, description="Brier Score")
+    crps: Optional[float] = Field(None, description="Continuous Ranked Probability Score")
+    reliability: Optional[float] = Field(None, description="Reliability score")
+    misses: Optional[int] = Field(None, description="Number of misses")
+    false_alarms: Optional[int] = Field(None, description="Number of false alarms")
+
+class VerificationResponseSchema(BaseModel):
+    location_id: str
+    variable: str
+    period: str
+    metrics: VerificationMetricsSchema

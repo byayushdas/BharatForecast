@@ -5,7 +5,9 @@ from app.schemas.forecast import (
     ForecastResponseSchema,
     LocationSchema,
     OfficialWarningSchema,
-    LatestRunResponseSchema
+    LatestRunResponseSchema,
+    VerificationResponseSchema,
+    VerificationMetricsSchema
 )
 from app.services.forecast_service import ForecastService
 
@@ -44,3 +46,8 @@ def get_official_warnings(location_id: str):
 @router.get("/runs/latest", response_model=LatestRunResponseSchema, summary="Retrieve the latest forecast run status.")
 def get_latest_run():
     return ForecastService.get_latest_run()
+
+@router.get("/verification", response_model=VerificationResponseSchema, summary="Retrieve forecast verification metrics (Future).")
+def get_verification(location_id: str, variable: str, period: str = "last_30_days"):
+    # STUB: Returns a 501 Not Implemented or empty mock until the full verification system is integrated
+    raise HTTPException(status_code=501, detail="Verification system not yet implemented in prototype.")

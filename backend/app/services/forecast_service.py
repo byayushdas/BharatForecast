@@ -178,8 +178,10 @@ class MockProvider(ForecastProvider):
         models.extend([
             ModelForecastSchema(model="IFS", value=float(f"{base_val-1.5:.1f}"), unit=var_unit, initializationTime=init_time, isEnsemble=False, isAi=False),
             ModelForecastSchema(model="AIFS", value=float(f"{base_val+0.7:.1f}"), unit=var_unit, initializationTime=init_time, isEnsemble=False, isAi=True),
-            ModelForecastSchema(model="BLEND", value=float(f"{base_val:.1f}"), unit=var_unit, isEnsemble=False, isAi=False)
         ])
+        
+        blend_val = sum(weights.get(m.model, 0.0) * m.value for m in models)
+        models.append(ModelForecastSchema(model="BLEND", value=float(f"{blend_val:.1f}"), unit=var_unit, isEnsemble=False, isAi=False))
         
         from app.schemas.forecast import WarningItemSchema
         
