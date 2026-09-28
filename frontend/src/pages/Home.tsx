@@ -136,60 +136,22 @@ export default function Home() {
         )}
         {/* Forecast Content */}
         {!isLoadingForecast && forecast && (
-          <div className="space-y-6">
+          <div className="space-y-12">
             
-            {/* Run Status & Warnings Bar */}
-            <div className="flex flex-col md:flex-row justify-between gap-4 bg-surface p-4 rounded-xl border border-border shadow-sm transition-all duration-200 hover:shadow-md hover:border-gray-300">
-              <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-text-secondary">
-                <div>
-                  <span className="block font-medium text-text-primary mb-0.5">Forecast run</span>
-                  {new Date(forecast.run.initialization_time).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })} UTC
-                </div>
-                <div>
-                  <span className="block font-medium text-text-primary mb-0.5">Published</span>
-                  {new Date(forecast.run.published_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })} UTC
-                </div>
-                <div>
-                  <span className="block font-medium text-text-primary mb-0.5">Sources</span>
-                  <div className="flex items-center gap-1.5">
-                    <span className={`w-2 h-2 rounded-full ${forecast.missing_sources.length > 0 ? 'bg-status-warning' : 'bg-status-success'}`}></span>
-                    {4 - forecast.missing_sources.length} / 4 available
-                  </div>
-                </div>
-                
-                <div className="flex items-end ml-2">
-                  <button 
-                    onClick={() => refetchForecast()}
-                    aria-label="Refresh forecast data"
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-text-primary rounded-md transition-colors"
-                  >
-                    <RefreshCw className={`w-3.5 h-3.5 ${isRefetching ? 'animate-spin' : ''}`} />
-                    <span className="font-medium">Refresh</span>
-                  </button>
-                </div>
-              </div>
-
-              {forecast.warning?.active ? (
-                <div className="bg-red-50 border border-red-200 text-status-danger px-4 py-3 rounded-lg flex gap-3 max-w-md">
-                  <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="font-semibold text-sm">Official {forecast.warning.title}</h4>
-                    <p className="text-xs mt-1 text-red-700/80">{forecast.warning.description} Valid for {forecast.warning.district} until {new Date(forecast.warning.valid_until!).toLocaleTimeString()}.</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-gray-50 border border-border text-text-secondary px-4 py-3 rounded-lg flex items-center gap-3 text-sm">
-                  <Activity className="w-4 h-4" />
-                  <span>Official IMD Warnings: No active warning for {forecast.location.name}</span>
-                </div>
-              )}
+            {/* 1. Where am I forecasting? */}
+            <div className="h-[400px]">
+              <WeatherMap 
+                location={forecast.location} 
+                locations={locations}
+                variable={selectedVariable} 
+                onLocationSelect={setSelectedLocationId}
+              />
             </div>
 
-            {/* Main Dashboard Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              
-              {/* Row 1: Summary Cards & Map */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 h-full">
+            {/* 2. What will the weather be? */}
+            <section>
+              <h2 className="text-xl font-semibold mb-4 text-text-primary">What will the weather be?</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                 <WeatherCard 
                   title="Temperature" 
                   value={forecast.summary.temperature} 
@@ -211,33 +173,7 @@ export default function Home() {
                   icon={<Wind className="w-5 h-5 text-green-500" />}
                   subtitle="Speed & direction"
                 />
-                
-                {forecast.uncertainty && forecast.uncertainty[selectedVariable] ? (
-                  <WeatherCard 
-                    title={`${selectedVariable} Range`} 
-                    value={`${forecast.uncertainty[selectedVariable].lowerBound.toFixed(1)} - ${forecast.uncertainty[selectedVariable].upperBound.toFixed(1)}`}
-                    icon={<Activity className="w-5 h-5 text-purple-500" />}
-                    subtitle={`Forecast uncertainty`}
-                  />
-                ) : (
-                  <WeatherCard 
-                    title="Forecast Confidence" 
-                    value="N/A"
-                    icon={<Activity className="w-5 h-5 text-gray-400" />}
-                    subtitle="Data unavailable"
-                  />
-                )}
               </div>
-              <div className="h-[350px] lg:h-auto min-h-[350px]">
-                <WeatherMap 
-                  location={forecast.location} 
-                  locations={locations}
-                  variable={selectedVariable} 
-                  onLocationSelect={setSelectedLocationId}
-                />
-              </div>
-
-              {/* Row 2: Chart & Weights */}
               <div className="h-[400px]">
                 <ForecastChart 
                   data={forecast.forecast} 
@@ -245,7 +181,22 @@ export default function Home() {
                   uncertainty={forecast.uncertainty ? forecast.uncertainty[selectedVariable] : undefined}
                 />
               </div>
-              <div className="h-[400px]">
+            </section>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* 3. What do the individual models predict? */}
+              <section>
+                <h2 className="text-xl font-semibold mb-4 text-text-primary">What do the individual models predict?</h2>
+                <ModelComparison 
+                  models={forecast.models} 
+                  variable={selectedVariable} 
+                  missingSources={forecast.missing_sources}
+                />
+              </section>
+
+              {/* 4. How did Bharat Forecast combine them? */}
+              <section className="h-full">
+                <h2 className="text-xl font-semibold mb-4 text-text-primary">How did Bharat Forecast combine them?</h2>
                 <ModelWeights 
                   weights={forecast.source_weights} 
                   locationName={forecast.location.name}
@@ -254,18 +205,94 @@ export default function Home() {
                   leadTime={`${forecastPeriod}h`}
                   modelVersion={forecast.run.model_version}
                 />
-              </div>
-
-              {/* Row 3: Model Comparison */}
-              <div className="lg:col-span-2">
-                <ModelComparison 
-                  models={forecast.models} 
-                  variable={selectedVariable} 
-                  missingSources={forecast.missing_sources}
-                />
-              </div>
-
+              </section>
             </div>
+
+            {/* 5. How uncertain is the forecast? */}
+            <section>
+              <h2 className="text-xl font-semibold mb-4 text-text-primary">How uncertain is the forecast?</h2>
+              {forecast.uncertainty && forecast.uncertainty[selectedVariable] ? (
+                <div className="bg-surface border border-border p-5 rounded-xl shadow-sm">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Activity className="w-5 h-5 text-purple-500" />
+                    <h3 className="font-medium text-text-primary">{selectedVariable} Range</h3>
+                  </div>
+                  <p className="text-text-secondary text-sm mb-3">
+                    Based on ensemble spread and historical performance, the expected range is:
+                  </p>
+                  <div className="text-2xl font-semibold text-text-primary">
+                    {forecast.uncertainty[selectedVariable].lowerBound.toFixed(1)} - {forecast.uncertainty[selectedVariable].upperBound.toFixed(1)}
+                  </div>
+                  <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-50 border border-border text-xs font-medium">
+                    <span className={`w-2 h-2 rounded-full ${
+                      forecast.uncertainty[selectedVariable].confidence === 'High' ? 'bg-status-success' : 
+                      forecast.uncertainty[selectedVariable].confidence === 'Medium' ? 'bg-status-warning' : 'bg-status-danger'
+                    }`}></span>
+                    {forecast.uncertainty[selectedVariable].confidence} Confidence
+                  </div>
+                </div>
+              ) : (
+                 <div className="bg-surface border border-border p-5 rounded-xl text-text-secondary text-sm shadow-sm">
+                   Uncertainty data is currently unavailable for {selectedVariable}.
+                 </div>
+              )}
+            </section>
+
+            {/* 6. Are there any official warnings? */}
+            <section>
+              <h2 className="text-xl font-semibold mb-4 text-text-primary">Are there any official warnings?</h2>
+              {forecast.warning?.active ? (
+                <div className="bg-red-50 border border-red-200 text-status-danger px-5 py-4 rounded-xl flex gap-4 shadow-sm">
+                  <AlertTriangle className="w-6 h-6 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold text-base mb-1">Official {forecast.warning.title}</h4>
+                    <p className="text-sm text-red-700/90 leading-relaxed">
+                      {forecast.warning.description} Valid for {forecast.warning.district} until {new Date(forecast.warning.valid_until!).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}.
+                    </p>
+                    <div className="mt-2 text-xs font-medium uppercase tracking-wider text-red-700/70">Source: India Meteorological Department (IMD)</div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-gray-50 border border-border text-text-secondary px-5 py-4 rounded-xl flex items-center gap-3 text-sm shadow-sm">
+                  <Activity className="w-5 h-5 text-gray-400" />
+                  <span>No active official IMD warnings for {forecast.location.name}.</span>
+                </div>
+              )}
+            </section>
+
+            {/* 7. When was this forecast generated? */}
+            <section>
+              <h2 className="text-xl font-semibold mb-4 text-text-primary">When was this forecast generated?</h2>
+              <div className="bg-surface border border-border p-5 rounded-xl shadow-sm text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                  <div>
+                    <span className="block text-text-secondary mb-1">Model Run (Initialization)</span>
+                    <span className="font-medium text-text-primary">{new Date(forecast.run.initialization_time).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })} UTC</span>
+                  </div>
+                  <div>
+                    <span className="block text-text-secondary mb-1">Published At</span>
+                    <span className="font-medium text-text-primary">{new Date(forecast.run.published_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })} UTC</span>
+                  </div>
+                  <div>
+                    <span className="block text-text-secondary mb-1">Model Version</span>
+                    <span className="font-medium text-text-primary">{forecast.run.model_version}</span>
+                  </div>
+                  <div>
+                    <span className="block text-text-secondary mb-1">Data Sources</span>
+                    <div className="flex items-center gap-1.5 font-medium text-text-primary">
+                      <span className={`w-2 h-2 rounded-full ${forecast.missing_sources.length > 0 ? 'bg-status-warning' : 'bg-status-success'}`}></span>
+                      {4 - forecast.missing_sources.length} / 4 available
+                    </div>
+                  </div>
+                </div>
+                {forecast.missing_sources.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-border flex gap-2 text-status-warning">
+                    <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>Missing sources during run: <strong>{forecast.missing_sources.join(", ")}</strong>. Weights were dynamically redistributed.</span>
+                  </div>
+                )}
+              </div>
+            </section>
 
           </div>
         )}
