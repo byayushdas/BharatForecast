@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 interface ModelWeightsProps {
   weights: Record<string, number>;
   locationName: string;
@@ -7,7 +9,7 @@ interface ModelWeightsProps {
   modelVersion?: string;
 }
 
-export default function ModelWeights({ weights, locationName, variable, runTime, leadTime, modelVersion }: ModelWeightsProps) {
+const ModelWeights = memo(function ModelWeights({ weights, locationName, variable, runTime, leadTime, modelVersion }: ModelWeightsProps) {
   // Sort weights descending
   const sortedWeights = Object.entries(weights).sort(([, a], [, b]) => b - a);
 
@@ -64,4 +66,6 @@ export default function ModelWeights({ weights, locationName, variable, runTime,
       </div>
     </div>
   );
-}
+});
+
+export default ModelWeights;

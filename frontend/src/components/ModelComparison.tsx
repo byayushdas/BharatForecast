@@ -1,6 +1,6 @@
 import type { ModelForecast } from "../types/weather";
 import clsx from "clsx";
-import { useState } from "react";
+import { useState, memo } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
 interface ModelComparisonProps {
@@ -9,7 +9,7 @@ interface ModelComparisonProps {
   missingSources?: string[];
 }
 
-export default function ModelComparison({ models, variable, missingSources = [] }: ModelComparisonProps) {
+const ModelComparison = memo(function ModelComparison({ models, variable, missingSources = [] }: ModelComparisonProps) {
   const [hiddenModels, setHiddenModels] = useState<Set<string>>(new Set());
   
   const blendModel = models.find(m => m.model === "BLEND");
@@ -130,4 +130,6 @@ export default function ModelComparison({ models, variable, missingSources = [] 
       </div>
     </div>
   );
-}
+});
+
+export default ModelComparison;

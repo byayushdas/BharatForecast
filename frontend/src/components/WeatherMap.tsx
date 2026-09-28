@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, memo } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { Location } from '../types/weather';
@@ -10,7 +10,7 @@ interface WeatherMapProps {
   onLocationSelect?: (id: string) => void;
 }
 
-export default function WeatherMap({ location, locations = [], variable, onLocationSelect }: WeatherMapProps) {
+const WeatherMap = memo(function WeatherMap({ location, locations = [], variable, onLocationSelect }: WeatherMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<Record<string, maplibregl.Marker>>({});
@@ -103,4 +103,6 @@ export default function WeatherMap({ location, locations = [], variable, onLocat
       <div ref={mapContainer} className="w-full h-full min-h-[350px]" />
     </div>
   );
-}
+});
+
+export default WeatherMap;

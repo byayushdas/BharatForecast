@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend
 } from 'recharts';
@@ -9,7 +10,7 @@ interface ForecastChartProps {
   uncertainty?: ForecastUncertainty;
 }
 
-export default function ForecastChart({ data, variable, uncertainty }: ForecastChartProps) {
+const ForecastChart = memo(function ForecastChart({ data, variable, uncertainty }: ForecastChartProps) {
   
   // Format time for X-axis
   const formatTime = (timeStr: string) => {
@@ -123,4 +124,6 @@ export default function ForecastChart({ data, variable, uncertainty }: ForecastC
       </div>
     </div>
   );
-}
+});
+
+export default ForecastChart;

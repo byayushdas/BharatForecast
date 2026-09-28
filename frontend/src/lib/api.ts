@@ -1,8 +1,40 @@
 import { getMockLocations, getMockForecast } from "../data/mockForecast";
 import type { ForecastResponse, Location, ModelComparisonResponse, ForecastRun, OfficialWarning } from "../types/weather";
 
-const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA !== 'false';
+const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+class ApiError extends Error {
+  constructor(message: string, public status?: number) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
+async function fetchApi<T>(endpoint: string, params: Record<string, string | number | undefined> = {}): Promise<T> {
+  const url = new URL(`${API_BASE_URL}${endpoint}`);
+  
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined) {
+      url.searchParams.append(key, String(value));
+    }
+  });
+
+  try {
+    const response = await fetch(url.toString());
+    
+    if (!response.ok) {
+      throw new ApiError('Unable to retrieve data. Please try again.', response.status);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError('Network connection failed. Please check your internet connection.');
+  }
+}
 
 export const getLocations = async (query?: string): Promise<Location[]> => {
   if (USE_MOCK_DATA) {
@@ -18,9 +50,7 @@ export const getLocations = async (query?: string): Promise<Location[]> => {
     });
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/locations${query ? `?query=${query}` : ''}`);
-  if (!response.ok) throw new Error('Failed to fetch locations');
-  return response.json();
+  return fetchApi<Location[]>('/api/v1/locations', { query });
 };
 
 export const getForecast = async (locationId: string, hours: number = 120): Promise<ForecastResponse> => {
@@ -36,9 +66,7 @@ export const getForecast = async (locationId: string, hours: number = 120): Prom
   const lat = loc ? loc.latitude : 0;
   const lon = loc ? loc.longitude : 0;
   
-  const response = await fetch(`${API_BASE_URL}/api/v1/forecast?lat=${lat}&lon=${lon}&hours=${hours}`);
-  if (!response.ok) throw new Error('Failed to fetch forecast');
-  return response.json();
+  return fetchApi<ForecastResponse>('/api/v1/forecast', { lat, lon, hours });
 };
 
 export const getModelComparison = async (locationId: string, variable: string): Promise<ModelComparisonResponse> => {
@@ -56,9 +84,7 @@ export const getModelComparison = async (locationId: string, variable: string): 
     });
   }
   
-  const response = await fetch(`${API_BASE_URL}/api/v1/models/compare?location_id=${locationId}&variable=${variable}`);
-  if (!response.ok) throw new Error('Failed to fetch model comparison');
-  return response.json();
+  return fetchApi<ModelComparisonResponse>('/api/v1/models/compare', { location_id: locationId, variable });
 };
 
 export const getModelWeights = async (locationId: string, variable: string): Promise<Record<string, number>> => {
@@ -68,9 +94,7 @@ export const getModelWeights = async (locationId: string, variable: string): Pro
     });
   }
   
-  const response = await fetch(`${API_BASE_URL}/api/v1/weights?location_id=${locationId}&variable=${variable}`);
-  if (!response.ok) throw new Error('Failed to fetch model weights');
-  return response.json();
+  return fetchApi<Record<string, number>>('/api/v1/weights', { location_id: locationId, variable });
 };
 
 export const getLatestRun = async (): Promise<ForecastRun> => {
@@ -80,9 +104,7 @@ export const getLatestRun = async (): Promise<ForecastRun> => {
     });
   }
   
-  const response = await fetch(`${API_BASE_URL}/api/v1/runs/latest`);
-  if (!response.ok) throw new Error('Failed to fetch latest run');
-  return response.json();
+  return fetchApi<ForecastRun>('/api/v1/runs/latest');
 };
 
 export const getOfficialWarnings = async (locationId: string): Promise<OfficialWarning> => {
@@ -95,7 +117,5 @@ export const getOfficialWarnings = async (locationId: string): Promise<OfficialW
     });
   }
   
-  const response = await fetch(`${API_BASE_URL}/api/v1/official-warnings?location_id=${locationId}`);
-  if (!response.ok) throw new Error('Failed to fetch official warnings');
-  return response.json();
+  return fetchApi<OfficialWarning>('/api/v1/official-warnings', { location_id: locationId });
 };
