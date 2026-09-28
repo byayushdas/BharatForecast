@@ -5,9 +5,11 @@ const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 class ApiError extends Error {
-  constructor(message: string, public status?: number) {
+  status?: number;
+  constructor(message: string, status?: number) {
     super(message);
     this.name = 'ApiError';
+    this.status = status;
   }
 }
 

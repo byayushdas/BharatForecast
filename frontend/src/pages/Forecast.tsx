@@ -77,52 +77,63 @@ export default function Forecast() {
         <p className="text-text-secondary">Analyze blended forecast data and model contributions</p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-4 mb-8 bg-surface p-4 rounded-xl border border-border shadow-sm">
-        <div className="relative">
-          <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-text-secondary">
-            <MapPin className="w-4 h-4" />
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8 bg-surface p-4 rounded-xl border border-border shadow-sm">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-text-secondary">
+              <MapPin className="w-4 h-4" />
+            </div>
+            <select
+              value={selectedLocationId}
+              onChange={(e) => setSelectedLocationId(e.target.value)}
+              disabled={isLoadingLocations}
+              className="pl-9 pr-10 py-2 bg-gray-50 border border-border rounded-lg text-sm font-medium text-text-primary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all w-48"
+            >
+              {locations?.map(loc => (
+                <option key={loc.id} value={loc.id}>{loc.name}, {loc.state}</option>
+              ))}
+            </select>
+            <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-secondary" />
           </div>
-          <select
-            value={selectedLocationId}
-            onChange={(e) => setSelectedLocationId(e.target.value)}
-            disabled={isLoadingLocations}
-            className="pl-9 pr-10 py-2 bg-gray-50 border border-border rounded-lg text-sm font-medium text-text-primary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all w-48"
-          >
-            {locations?.map(loc => (
-              <option key={loc.id} value={loc.id}>{loc.name}, {loc.state}</option>
-            ))}
-          </select>
-          <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-secondary" />
-        </div>
 
-        <div className="relative">
-          <select
-            value={selectedVariable}
-            onChange={(e) => setSelectedVariable(e.target.value as WeatherVariable)}
-            className="pl-4 pr-10 py-2 bg-gray-50 border border-border rounded-lg text-sm font-medium text-text-primary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-          >
-            <option value="Rainfall">Rainfall</option>
-            <option value="Temperature">Temperature</option>
-            <option value="Wind">Wind</option>
-          </select>
-          <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-secondary" />
-        </div>
-
-        <div className="relative">
-          <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-text-secondary">
-            <Calendar className="w-4 h-4" />
+          <div className="relative">
+            <select
+              value={selectedVariable}
+              onChange={(e) => setSelectedVariable(e.target.value as WeatherVariable)}
+              className="pl-4 pr-10 py-2 bg-gray-50 border border-border rounded-lg text-sm font-medium text-text-primary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            >
+              <option value="Rainfall">Rainfall</option>
+              <option value="Temperature">Temperature</option>
+              <option value="Wind">Wind</option>
+            </select>
+            <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-secondary" />
           </div>
-          <select
-            value={forecastPeriod}
-            onChange={(e) => setForecastPeriod(Number(e.target.value))}
-            className="pl-9 pr-10 py-2 bg-gray-50 border border-border rounded-lg text-sm font-medium text-text-primary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-          >
-            <option value={24}>Next 24 hours</option>
-            <option value={72}>Next 3 days</option>
-            <option value={120}>Next 5 days</option>
-          </select>
-          <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-secondary" />
+
+          <div className="relative">
+            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-text-secondary">
+              <Calendar className="w-4 h-4" />
+            </div>
+            <select
+              value={forecastPeriod}
+              onChange={(e) => setForecastPeriod(Number(e.target.value))}
+              className="pl-9 pr-10 py-2 bg-gray-50 border border-border rounded-lg text-sm font-medium text-text-primary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            >
+              <option value={24}>Next 24 hours</option>
+              <option value={72}>Next 3 days</option>
+              <option value={120}>Next 5 days</option>
+            </select>
+            <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-secondary" />
+          </div>
         </div>
+        
+        <button
+          onClick={() => refetchForecast()}
+          disabled={isRefetching}
+          className="flex items-center gap-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors px-3 py-2 rounded-lg hover:bg-gray-50 border border-transparent"
+        >
+          <RefreshCw className={`w-4 h-4 ${isRefetching ? 'animate-spin' : ''}`} />
+          <span className="hidden sm:inline">Refresh Data</span>
+        </button>
       </div>
 
       {isLoadingForecast && (
