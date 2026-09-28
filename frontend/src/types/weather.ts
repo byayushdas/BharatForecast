@@ -64,6 +64,8 @@ export interface OfficialWarning {
 
 export interface ForecastResponse {
   location: Location;
+  variable: string;
+  unit: string;
   run: ForecastRun;
   summary: ForecastSummary;
   forecast: ForecastPoint[];

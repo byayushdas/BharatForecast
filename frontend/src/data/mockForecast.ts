@@ -55,6 +55,8 @@ export const getMockForecast = (locationId: string): ForecastResponse => {
   
   return {
     location,
+    variable: "rainfall",
+    unit: "mm",
     run: {
       id: "demo-run-001",
       initialization_time: new Date(new Date().setHours(0,0,0,0)).toISOString(),

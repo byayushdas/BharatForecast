@@ -136,7 +136,16 @@ class ForecastService:
             ModelForecastSchema(model="GFS", value=float(f"{(base_rain*4)+1.8:.1f}"), unit="mm", initializationTime=init_time, isEnsemble=False, isAi=False)
         ]
         
-        if loc.id != "delhi":
+        missing = []
+        if loc.id == "delhi":
+            missing.append("GEFS")
+            weights = {
+                "GFS": 0.25,
+                "GEFS": 0.00,
+                "IFS": 0.35,
+                "AIFS": 0.40
+            }
+        else:
             models.append(ModelForecastSchema(model="GEFS", value=float(f"{(base_rain*4)-0.7:.1f}"), unit="mm", initializationTime=init_time, isEnsemble=True, isAi=False))
             
         models.extend([
@@ -160,8 +169,16 @@ class ForecastService:
             warnings=[warning_item] if base_rain > 10 else []
         )
         
+        unit_map = {
+            "rainfall": "mm",
+            "temperature": "°C",
+            "wind": "m/s"
+        }
+        
         return ForecastResponseSchema(
             location=loc,
+            variable=variable.lower(),
+            unit=unit_map.get(variable.lower(), ""),
             run=run,
             summary=summary,
             forecast=forecast,

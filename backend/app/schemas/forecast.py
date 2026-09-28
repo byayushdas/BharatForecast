@@ -66,6 +66,8 @@ class ModelForecastSchema(BaseModel):
 
 class ForecastResponseSchema(BaseModel):
     location: LocationSchema
+    variable: str
+    unit: str
     run: ForecastRunSchema
     summary: ForecastSummarySchema
     forecast: List[ForecastPointSchema]
