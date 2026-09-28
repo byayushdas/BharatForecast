@@ -68,10 +68,24 @@ class ForecastService:
                 best_loc = l
         return LocationSchema(**best_loc)
 
-    @staticmethod
-    def get_forecast(lat: float, lon: float, hours: int, variable: str, location_id: str = None) -> ForecastResponseSchema:
-        if os.environ.get("USE_MOCK_DATA", "true").lower() == "false":
-            raise NotImplementedError("Open-Meteo adapter not yet implemented. Please set USE_MOCK_DATA=true.")
+from abc import ABC, abstractmethod
+
+class ForecastProvider(ABC):
+    @abstractmethod
+    def get_forecast(self, lat: float, lon: float, hours: int, variable: str, location_id: str = None) -> ForecastResponseSchema:
+        pass
+        
+    @abstractmethod
+    def get_model_comparison(self, location_id: str, variable: str) -> ModelComparisonResponseSchema:
+        pass
+        
+    @abstractmethod
+    def get_latest_run(self) -> LatestRunResponseSchema:
+        pass
+
+class MockProvider(ForecastProvider):
+    def get_forecast(self, lat: float, lon: float, hours: int, variable: str, location_id: str = None) -> ForecastResponseSchema:
+        loc = ForecastService._find_location(lat, lon, location_id)
             
         loc = ForecastService._find_location(lat, lon, location_id)
         
@@ -132,8 +146,21 @@ class ForecastService:
         
         init_time = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ")
         
+        unit_map = {
+            "rainfall": "mm",
+            "temperature": "°C",
+            "wind": "m/s"
+        }
+        var_unit = unit_map.get(variable.lower(), "mm")
+        
+        base_val = base_rain * 4
+        if variable.lower() == "temperature":
+            base_val = base_temp
+        elif variable.lower() == "wind":
+            base_val = base_wind
+            
         models = [
-            ModelForecastSchema(model="GFS", value=float(f"{(base_rain*4)+1.8:.1f}"), unit="mm", initializationTime=init_time, isEnsemble=False, isAi=False)
+            ModelForecastSchema(model="GFS", value=float(f"{base_val+1.8:.1f}"), unit=var_unit, initializationTime=init_time, isEnsemble=False, isAi=False)
         ]
         
         missing = []
@@ -146,12 +173,12 @@ class ForecastService:
                 "AIFS": 0.40
             }
         else:
-            models.append(ModelForecastSchema(model="GEFS", value=float(f"{(base_rain*4)-0.7:.1f}"), unit="mm", initializationTime=init_time, isEnsemble=True, isAi=False))
+            models.append(ModelForecastSchema(model="GEFS", value=float(f"{base_val-0.7:.1f}"), unit=var_unit, initializationTime=init_time, isEnsemble=True, isAi=False))
             
         models.extend([
-            ModelForecastSchema(model="IFS", value=float(f"{(base_rain*4)-1.5:.1f}"), unit="mm", initializationTime=init_time, isEnsemble=False, isAi=False),
-            ModelForecastSchema(model="AIFS", value=float(f"{(base_rain*4)+0.7:.1f}"), unit="mm", initializationTime=init_time, isEnsemble=False, isAi=True),
-            ModelForecastSchema(model="BLEND", value=float(f"{base_rain*4:.1f}"), unit="mm", isEnsemble=False, isAi=False)
+            ModelForecastSchema(model="IFS", value=float(f"{base_val-1.5:.1f}"), unit=var_unit, initializationTime=init_time, isEnsemble=False, isAi=False),
+            ModelForecastSchema(model="AIFS", value=float(f"{base_val+0.7:.1f}"), unit=var_unit, initializationTime=init_time, isEnsemble=False, isAi=True),
+            ModelForecastSchema(model="BLEND", value=float(f"{base_val:.1f}"), unit=var_unit, isEnsemble=False, isAi=False)
         ])
         
         from app.schemas.forecast import WarningItemSchema
@@ -190,10 +217,9 @@ class ForecastService:
             warning=warning
         )
 
-    @staticmethod
-    def get_model_comparison(location_id: str, variable: str) -> ModelComparisonResponseSchema:
+    def get_model_comparison(self, location_id: str, variable: str) -> ModelComparisonResponseSchema:
         loc = ForecastService._find_location(0, 0, location_id)
-        forecast_resp = ForecastService.get_forecast(loc.latitude, loc.longitude, 120, variable, location_id)
+        forecast_resp = self.get_forecast(loc.latitude, loc.longitude, 120, variable, location_id)
         
         return ModelComparisonResponseSchema(
             location=forecast_resp.location,
@@ -202,8 +228,7 @@ class ForecastService:
             variable=variable
         )
         
-    @staticmethod
-    def get_latest_run() -> LatestRunResponseSchema:
+    def get_latest_run(self) -> LatestRunResponseSchema:
         return LatestRunResponseSchema(
             run_id="demo-run-001",
             initialization_time=datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -213,3 +238,22 @@ class ForecastService:
             sources_expected=4,
             status="complete"
         )
+
+    @staticmethod
+    def get_provider() -> ForecastProvider:
+        if os.environ.get("USE_MOCK_DATA", "true").lower() == "true":
+            return MockProvider()
+        raise NotImplementedError("Open-Meteo adapter not yet implemented. Please set USE_MOCK_DATA=true.")
+
+    @staticmethod
+    def get_forecast(lat: float, lon: float, hours: int, variable: str, location_id: str = None) -> ForecastResponseSchema:
+        return ForecastService.get_provider().get_forecast(lat, lon, hours, variable, location_id)
+
+    @staticmethod
+    def get_model_comparison(location_id: str, variable: str) -> ModelComparisonResponseSchema:
+        return ForecastService.get_provider().get_model_comparison(location_id, variable)
+
+    @staticmethod
+    def get_latest_run() -> LatestRunResponseSchema:
+        return ForecastService.get_provider().get_latest_run()
+
