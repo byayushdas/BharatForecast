@@ -107,3 +107,28 @@ Mock / Prepared Data
 ```
 
 In the future, the backend will interface with active data science pipelines fetching real-time data from global weather models.
+
+## Detailed Project Report
+
+### Architecture Summary
+Bharat Forecast is a monorepo containing a decoupled frontend and backend, structured for rapid development and high scalability. The application currently operates in a "Mock Mode", generating deterministic and mathematically consistent weather patterns in-memory, which allows for UI/UX development parallel to the data-science pipeline creation.
+
+### Backend (Python/FastAPI)
+- **Framework**: Built with FastAPI for high-performance async request handling.
+- **Routing**: Cleanly modularized using API routers (`forecast.py`, `models.py`, `health.py`) under the `/api/v1` prefix.
+- **Data Validation**: Uses Pydantic schemas (`LocationSchema`, `ForecastResponseSchema`, etc.) to enforce strict input and output data structures.
+- **Service Layer**: The core logic resides in `forecast_service.py`, which implements a `ForecastProvider` interface. Currently, a `MockProvider` generates synthetic sinusoidal weather data (temperature, rainfall, wind speed/direction) for predefined Indian cities like Delhi, Mumbai, and Kolkata.
+- **Error Handling**: Implements custom exception handlers (`APIError`) to ensure consistent, predictable JSON error responses for the client.
+
+### Frontend (React/Vite/TypeScript)
+- **Framework**: Built on React 19 with Vite for ultra-fast HMR and optimized builds.
+- **Routing**: Uses `react-router-dom` for client-side navigation (Home, Forecast, and About pages) wrapped in a `Workspace` shell layout.
+- **State Management & Data Fetching**: Utilizes `@tanstack/react-query` to handle caching, background refetching, and state synchronization with the backend API.
+- **Styling**: Tailwind CSS is used extensively for responsive utility-first styling. The UI features a custom dark mode, smooth transitions, and glassmorphism elements as defined in `index.css`.
+- **Visualization**: Integrates `recharts` for interactive data plotting (temperature trends, precipitation) and `maplibre-gl` for rendering high-performance geographic maps (`WeatherMap.tsx`).
+- **Component Architecture**: Highly modular, with dedicated components for specific UI segments such as `ForecastChart`, `ModelComparison`, `ModelWeights`, and `WeatherCard`.
+
+### Future Roadmap
+1. **Data Ingestion Pipeline**: Replace the `MockProvider` with a real data ingestion service that pulls and blends live datasets from GFS, ECMWF, and AIFS.
+2. **Database Integration**: Implement a time-series database (e.g., InfluxDB, PostgreSQL) to cache model runs and historical verification data.
+3. **Advanced Visualizations**: Expand `MapLibre` implementation with animated weather layers (radar, satellite imagery, wind particles).
