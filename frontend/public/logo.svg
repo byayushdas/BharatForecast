@@ -1,0 +1,34 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Bharat Forecast Logo</title>
+  <defs>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#1D4ED8" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Stylized Sun / Network Node at Top Right -->
+  <circle cx="360" cy="180" r="40" fill="#F59E0B" opacity="0.9" />
+  
+  <!-- Stylized Cloud / Map Base -->
+  <path d="M 390,280 C 430,280 460,310 460,350 C 460,390 430,420 390,420 L 140,420 C 90,420 50,380 50,330 C 50,285 80,245 125,240 C 140,180 195,140 260,140 C 315,140 365,175 385,225 C 400,225 410,230 420,240 Z" fill="url(#blueGrad)" />
+
+  <!-- Network Nodes representing Data / Blended AI Models -->
+  <circle cx="160" cy="270" r="12" fill="white" />
+  <circle cx="260" cy="220" r="12" fill="white" />
+  <circle cx="340" cy="290" r="12" fill="white" />
+  <circle cx="240" cy="340" r="12" fill="white" />
+  <circle cx="150" cy="360" r="12" fill="white" />
+  
+  <!-- Network Connections -->
+  <line x1="160" y1="270" x2="260" y2="220" stroke="white" stroke-width="4" />
+  <line x1="260" y1="220" x2="340" y2="290" stroke="white" stroke-width="4" />
+  <line x1="340" y1="290" x2="240" y2="340" stroke="white" stroke-width="4" />
+  <line x1="240" y1="340" x2="160" y2="270" stroke="white" stroke-width="4" />
+  <line x1="160" y1="270" x2="150" y2="360" stroke="white" stroke-width="4" />
+  <line x1="240" y1="340" x2="150" y2="360" stroke="white" stroke-width="4" />
+  
+  <!-- Stylized Wind/Waves at Bottom -->
+  <path d="M 120,450 Q 256,410 392,450 Q 460,470 500,450" fill="none" stroke="#60A5FA" stroke-width="16" stroke-linecap="round" />
+  <path d="M 160,480 Q 256,450 352,480 Q 400,495 440,480" fill="none" stroke="#93C5FD" stroke-width="12" stroke-linecap="round" />
+</svg>
