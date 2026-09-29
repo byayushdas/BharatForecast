@@ -1,129 +1,30 @@
-import { memo } from 'react';
-import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend
-} from 'recharts';
-import type { ForecastPoint, WeatherVariable, ForecastUncertainty } from '../types/weather';
+import { useId } from 'react';
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { CloudRain, Thermometer, Wind } from 'lucide-react';
+import type { ForecastPoint, WeatherVariable } from '../types/weather';
+import { dataKeys, formatIST, number, units } from '../lib/format';
 
-interface ForecastChartProps {
-  data: ForecastPoint[];
-  variable: WeatherVariable;
-  uncertainty?: ForecastUncertainty;
-}
-
-const ForecastChart = memo(function ForecastChart({ data, variable, uncertainty }: ForecastChartProps) {
-  
-  // Format time for X-axis
-  const formatTime = (timeStr: string) => {
-    const date = new Date(timeStr);
-    return date.toLocaleDateString([], { weekday: 'short', hour: '2-digit' });
-  };
-
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      const date = new Date(label);
-      return (
-        <div className="bg-surface p-3 border border-border shadow-md rounded-md text-sm">
-          <p className="text-text-secondary mb-2">{date.toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
-          {payload.map((entry: any, index: number) => (
-            <div key={index} className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></span>
-              <span className="font-medium text-text-primary">
-                {entry.name}: {entry.value.toFixed(1)} {variable === 'Rainfall' ? 'mm' : variable === 'Temperature' ? '°C' : 'km/h'}
-              </span>
-            </div>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
-
-  const renderChart = () => {
-    switch (variable) {
-      case 'Rainfall':
-        return (
-          <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-            <defs>
-              <linearGradient id="colorRain" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#2563EB" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#2563EB" stopOpacity={0}/>
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-            <XAxis dataKey="time" tickFormatter={formatTime} stroke="#475569" fontSize={12} tickLine={false} axisLine={false} minTickGap={30} />
-            <YAxis stroke="#475569" fontSize={12} tickLine={false} axisLine={false} />
-            <Tooltip content={<CustomTooltip />} />
-            <Legend verticalAlign="top" height={36} iconType="circle" />
-            <Area type="monotone" name="Blended Rainfall" dataKey="rainfall" stroke="#2563EB" strokeWidth={2} fillOpacity={1} fill="url(#colorRain)" />
-          </AreaChart>
-        );
-      case 'Temperature':
-        return (
-          <LineChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-            <XAxis dataKey="time" tickFormatter={formatTime} stroke="#475569" fontSize={12} tickLine={false} axisLine={false} minTickGap={30} />
-            <YAxis stroke="#475569" fontSize={12} tickLine={false} axisLine={false} domain={['dataMin - 2', 'dataMax + 2']} />
-            <Tooltip content={<CustomTooltip />} />
-            <Legend verticalAlign="top" height={36} iconType="circle" />
-            <Line type="monotone" name="Temperature" dataKey="temperature" stroke="#DC2626" strokeWidth={2} dot={false} activeDot={{ r: 6 }} />
-          </LineChart>
-        );
-      case 'Wind':
-        return (
-          <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-             <defs>
-              <linearGradient id="colorWind" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#16A34A" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#16A34A" stopOpacity={0}/>
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-            <XAxis dataKey="time" tickFormatter={formatTime} stroke="#475569" fontSize={12} tickLine={false} axisLine={false} minTickGap={30} />
-            <YAxis stroke="#475569" fontSize={12} tickLine={false} axisLine={false} />
-            <Tooltip content={<CustomTooltip />} />
-            <Legend verticalAlign="top" height={36} iconType="circle" />
-            <Area type="monotone" name="Wind Speed" dataKey="windSpeed" stroke="#16A34A" strokeWidth={2} fillOpacity={1} fill="url(#colorWind)" />
-          </AreaChart>
-        );
-    }
-  };
-
-  return (
-    <div className="bg-surface rounded-xl border border-border p-5 shadow-sm h-full flex flex-col transition-all duration-200 hover:shadow-md hover:border-gray-300">
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h3 className="text-xl font-semibold text-text-primary">Forecast Timeline</h3>
-          <p className="text-sm text-text-secondary">{variable} over next 5 days</p>
-        </div>
-        
-        {uncertainty && (
-          <div className="text-right">
-            <div className="text-xs text-text-secondary uppercase tracking-wider mb-1">Uncertainty</div>
-            <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-50 border border-border text-xs font-medium">
-              <span className={`w-2 h-2 rounded-full ${
-                uncertainty.confidence === 'High' ? 'bg-status-success' : 
-                uncertainty.confidence === 'Medium' ? 'bg-status-warning' : 'bg-status-danger'
-              }`}></span>
-              {uncertainty.confidence} Confidence
-            </div>
-            <div className="text-xs text-text-secondary mt-1">
-              Range: {uncertainty.lowerBound.toFixed(1)} - {uncertainty.upperBound.toFixed(1)}
-            </div>
-          </div>
-        )}
-      </div>
-      
-      <div 
-        className="flex-1 min-h-[300px]" 
-        role="figure" 
-        aria-label={`Interactive 5-day ${variable} forecast chart`}
-      >
-        <ResponsiveContainer width="100%" height="100%">
-          {renderChart()}
-        </ResponsiveContainer>
-      </div>
+interface Props { data: ForecastPoint[]; variable: WeatherVariable; hours: number; onVariableChange: (variable: WeatherVariable) => void }
+const colors = { Rainfall: '#3f70e9', Temperature: '#e79550', Wind: '#399e98' };
+export default function ForecastChart({ data, variable, hours, onVariableChange }: Props) {
+  const gradientId = useId().replaceAll(':', '');
+  const color = colors[variable];
+  const values = data.flatMap(point => point[dataKeys[variable]] === undefined ? [] : [point[dataKeys[variable]]!]);
+  return <section className="panel forecast-chart">
+    <div className="panel-heading"><div><h2>Your forecast, over time</h2><p>The next {hours === 24 ? '24 hours' : `${hours / 24} days`} · 6-hour intervals</p></div><span className="chart-live-label"><span className="small-dot" />Bharat Blend</span></div>
+    <div className="chart-toolbar"><div className="variable-tabs" role="group" aria-label="Weather variable">{([{ name: 'Rainfall', Icon: CloudRain }, { name: 'Temperature', Icon: Thermometer }, { name: 'Wind', Icon: Wind }] as const).map(({ name, Icon }) => <button key={name} className={variable === name ? 'active' : ''} aria-pressed={variable === name} onClick={() => onVariableChange(name)}><Icon size={14} />{name}</button>)}</div><span className="chart-unit">{units[variable]}</span></div>
+    <div className="chart-canvas" role="img" aria-label={`${variable} forecast over ${hours} hours. ${values.length ? `Values range from ${number(Math.min(...values))} to ${number(Math.max(...values))} ${units[variable]}.` : 'No values available.'} Detailed values available in the Forecast data table below.`}>
+      <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+        <AreaChart data={data} margin={{ top: 14, right: 12, left: -24, bottom: 0 }}>
+          <defs><linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity={0.19} /><stop offset="100%" stopColor={color} stopOpacity={0.01} /></linearGradient></defs>
+          <CartesianGrid vertical={false} stroke="#e9edf4" strokeDasharray="4 4" />
+          <XAxis dataKey="time" tickFormatter={time => formatIST(time, hours === 24 ? { hour: '2-digit', minute: '2-digit' } : { day: 'numeric', month: 'short', hour: '2-digit' })} axisLine={false} tickLine={false} tick={{ fill: '#8792a6', fontSize: 10 }} minTickGap={42} dy={9} />
+          <YAxis axisLine={false} tickLine={false} tick={{ fill: '#8792a6', fontSize: 10 }} domain={variable === 'Temperature' ? ['auto', 'auto'] : [0, 'auto']} />
+          <Tooltip labelFormatter={label => `${formatIST(String(label))} IST`} formatter={value => [`${number(Number(value))} ${units[variable]}`, variable]} contentStyle={{ border: '1px solid #e6ebf3', borderRadius: 12, boxShadow: '0 8px 24px #17345c12', fontSize: 12 }} />
+          <Area type="monotone" dataKey={dataKeys[variable]} name={variable} stroke={color} strokeWidth={2.5} fill={`url(#${gradientId})`} dot={false} activeDot={{ r: 5, stroke: '#fff', strokeWidth: 3 }} isAnimationActive={false} />
+        </AreaChart>
+      </ResponsiveContainer>
     </div>
-  );
-});
-
-export default ForecastChart;
+    <div className="chart-bottom"><span>Forecast timeline <span>· IST</span></span><span>Each point is a forecast interval</span></div>
+  </section>;
+}

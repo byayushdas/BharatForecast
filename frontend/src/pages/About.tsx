@@ -1,98 +1,28 @@
-import { ArrowDown } from "lucide-react";
+import { ArrowRight, FlaskConical, Orbit } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { modelColors } from '../lib/format';
 
+const sources = [
+  { name: 'GFS', provider: 'NOAA · Physical model', description: 'A deterministic global forecast, offering one view of how the atmosphere may evolve.' },
+  { name: 'GEFS', provider: 'NOAA · Ensemble', description: 'Multiple forecast members help describe the spread of possible weather outcomes.' },
+  { name: 'IFS', provider: 'ECMWF · Physical model', description: 'A numerical weather prediction system that contributes another independent perspective.' },
+  { name: 'AIFS', provider: 'ECMWF · AI model', description: 'A data-driven approach to weather forecasting, alongside traditional physical models.' },
+];
 export default function About() {
-  return (
-    <div className="max-w-[800px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-3xl font-semibold text-text-primary mb-8 text-center">About Bharat Forecast</h1>
-      
-      <div className="space-y-12">
-        <section>
-          <h2 className="text-2xl font-semibold text-text-primary mb-4">What is Bharat Forecast?</h2>
-          <div className="prose prose-slate text-text-secondary leading-relaxed">
-            <p>
-              Bharat Forecast is a prototype for dynamically combining multiple weather forecasting systems. 
-              Instead of relying on a single weather model, it ingests forecasts from multiple leading global 
-              models and uses Artificial Intelligence to learn how to optimally blend them for specific locations 
-              and weather variables across India.
-            </p>
-          </div>
-        </section>
-
-        <section>
-          <h2 className="text-2xl font-semibold text-text-primary mb-4">Forecast Sources</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-surface border border-border p-4 rounded-lg">
-              <h3 className="font-medium text-text-primary">NOAA GFS</h3>
-              <p className="text-sm text-text-secondary mt-1">Global Forecast System (Deterministic)</p>
-            </div>
-            <div className="bg-surface border border-border p-4 rounded-lg">
-              <h3 className="font-medium text-text-primary">NOAA GEFS</h3>
-              <p className="text-sm text-text-secondary mt-1">Global Ensemble Forecast System</p>
-            </div>
-            <div className="bg-surface border border-border p-4 rounded-lg">
-              <h3 className="font-medium text-text-primary">ECMWF IFS</h3>
-              <p className="text-sm text-text-secondary mt-1">Integrated Forecasting System</p>
-            </div>
-            <div className="bg-surface border border-border p-4 rounded-lg">
-              <h3 className="font-medium text-text-primary">ECMWF AIFS</h3>
-              <p className="text-sm text-text-secondary mt-1">Artificial Intelligence Forecasting System</p>
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <h2 className="text-2xl font-semibold text-text-primary mb-6">How it works</h2>
-          <div className="flex flex-col items-center max-w-sm mx-auto space-y-2">
-            <div className="w-full bg-surface border border-border p-3 text-center rounded-lg font-medium">
-              Multiple Models
-            </div>
-            <ArrowDown className="text-text-secondary" />
-            <div className="w-full bg-surface border border-border p-3 text-center rounded-lg font-medium">
-              Data Alignment
-            </div>
-            <ArrowDown className="text-text-secondary" />
-            <div className="w-full bg-surface border border-border p-3 text-center rounded-lg font-medium">
-              Bias Correction
-            </div>
-            <ArrowDown className="text-text-secondary" />
-            <div className="w-full bg-primary-light text-primary border border-primary/20 p-3 text-center rounded-lg font-medium">
-              Adaptive Weighting
-            </div>
-            <ArrowDown className="text-text-secondary" />
-            <div className="w-full bg-primary text-white border border-primary p-3 text-center rounded-lg font-medium shadow-md">
-              Blended Forecast
-            </div>
-            <ArrowDown className="text-text-secondary" />
-            <div className="w-full bg-surface border border-border p-3 text-center rounded-lg font-medium">
-              Verification
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <h2 className="text-2xl font-semibold text-text-primary mb-4">Verification Data</h2>
-          <div className="prose prose-slate text-text-secondary leading-relaxed mb-4">
-            <p>
-              The planned system continuously evaluates its own performance against historical and real-time ground truth data, using sources such as:
-            </p>
-          </div>
-          <ul className="list-disc list-inside text-text-secondary space-y-2 ml-2">
-            <li>IMD observations</li>
-            <li>NASA IMERG rainfall estimates</li>
-          </ul>
-        </section>
-
-        <section>
-          <h2 className="text-2xl font-semibold text-text-primary mb-4">Technology</h2>
-          <div className="flex flex-wrap gap-2">
-            {['React', 'TypeScript', 'Tailwind CSS', 'Python / FastAPI', 'scikit-learn', 'Xarray', 'PostgreSQL / PostGIS', 'Docker'].map(tech => (
-              <span key={tech} className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium">
-                {tech}
-              </span>
-            ))}
-          </div>
-        </section>
-      </div>
+  const [params] = useSearchParams();
+  return <>
+    <div className="topbar"><div className="breadcrumb">Workspace <span>/</span><strong>Our methodology</strong></div><span className="prototype-badge"><FlaskConical size={13} /> Experimental preview</span></div>
+    <div className="page-content about-page">
+      <header className="page-heading"><div><div className="eyebrow">THE THINKING BEHIND THE FORECAST</div><h1>Better together<span className="heading-dot">.</span></h1><p>Understanding the idea behind Bharat Forecast.</p></div></header>
+      <section className="about-hero"><div><span className="eyebrow">INTRODUCING BHARAT BLEND</span><h2>Many models.<br />One clearer outlook for India.</h2><p>India’s weather is wonderfully complex. Bharat Forecast explores how physical, ensemble, and AI weather models can be brought together into a local outlook—with the differences and uncertainty kept in view.</p><Link to={`/forecast?${params}`} className="button button-primary">Explore a forecast <ArrowRight size={15} /></Link></div><div className="about-orbit" aria-hidden="true"><Orbit size={175} strokeWidth={.65} /></div></section>
+      <div className="methodology-intro"><h2>Four perspectives on the atmosphere.</h2><p>These are the source systems represented in the prototype. Demo values are illustrative, not downloads from these providers.</p></div>
+      <div className="about-grid">{sources.map(source => <article className="panel source-card" key={source.name}><i className="model-color" style={{ background: modelColors[source.name] }} /><h3>{source.name}</h3><span>{source.provider}</span><p>{source.description}</p></article>)}</div>
+      <section><div className="methodology-intro"><h2>From global models to a local perspective.</h2><p>The proposed pipeline aligns forecasts, assigns context-dependent contributions, and explains the resulting outlook.</p></div><div className="method-steps">
+        <article className="panel method-step"><span className="step-number">01 / ALIGN</span><h3>Start on common ground</h3><p>Bring sources onto consistent locations, forecast intervals, variables, and units. Historical observations would support future bias correction.</p></article>
+        <article className="panel method-step"><span className="step-number">02 / BLEND</span><h3>Make each contribution visible</h3><p>Combine available sources with explicit weights. The prototype uses example weights; adaptive weighting remains part of the planned system.</p></article>
+        <article className="panel method-step"><span className="step-number">03 / UNDERSTAND</span><h3>Keep uncertainty in view</h3><p>Compare individual models with the blend and inspect the reported range. Verification against observations is planned, not yet established.</p></article>
+      </div></section>
+      <section className="about-status"><h3><FlaskConical size={18} />A transparent work in progress</h3><p>This is a research prototype. Synthetic data, example confidence labels, and demo advisories are not validated forecasts. Live ingestion, learned blending, and historical verification are future work. Always consult the <a href="https://mausam.imd.gov.in/" target="_blank" rel="noreferrer">India Meteorological Department</a> for official warnings.</p></section>
     </div>
-  );
+  </>;
 }

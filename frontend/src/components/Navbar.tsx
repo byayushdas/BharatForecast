@@ -1,83 +1,39 @@
-import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
-import { useState } from "react";
+import { Link, NavLink, useLocation, useSearchParams } from 'react-router-dom';
+import { ArrowUpRight, ChartNoAxesCombined, ChevronRight, CloudSun, FlaskConical, LayoutDashboard, MapPin, Menu, Orbit, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export default function Navbar() {
+  const [openAt, setOpenAt] = useState<string | null>(null);
+  const [params] = useSearchParams();
   const location = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const isActive = (path: string) => location.pathname === path;
-
-  return (
-    <nav className="bg-surface border-b border-border sticky top-0 z-50">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center gap-3">
-              <img src="/logo.svg" alt="Bharat Forecast" className="w-8 h-8" />
-              <div>
-                <span className="font-semibold text-text-primary block leading-tight">Bharat Forecast</span>
-                <span className="text-xs text-text-secondary block leading-tight">Hybrid Weather Intelligence</span>
-              </div>
-            </Link>
-          </div>
-
-          {/* Desktop Navigation */}
-          <div className="hidden sm:flex sm:items-center sm:gap-6">
-            <div className="flex items-center gap-2 mr-4 text-xs text-text-secondary">
-              <span className="w-2 h-2 rounded-full bg-status-success inline-block"></span>
-              Data services online
-            </div>
-            <Link to="/" className={`text-sm ${isActive("/") ? "text-primary font-medium" : "text-text-secondary hover:text-text-primary"}`}>Home</Link>
-            <Link to="/forecast" className={`text-sm ${isActive("/forecast") ? "text-primary font-medium" : "text-text-secondary hover:text-text-primary"}`}>Forecast</Link>
-            <Link to="/about" className={`text-sm ${isActive("/about") ? "text-primary font-medium" : "text-text-secondary hover:text-text-primary"}`}>About</Link>
-          </div>
-
-          {/* Mobile menu button */}
-          <div className="flex items-center sm:hidden">
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-text-secondary hover:text-text-primary focus:outline-none"
-              aria-label="Toggle menu"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-        </div>
+  const open = openAt === location.key;
+  const setOpen = (value: boolean) => setOpenAt(value ? location.key : null);
+  const query = params.toString() ? `?${params}` : '';
+  const activeCity = params.get('location') || 'kolkata';
+  useEffect(() => {
+    const close = (event: KeyboardEvent) => { if (event.key === 'Escape') setOpenAt(null); };
+    window.addEventListener('keydown', close);
+    return () => window.removeEventListener('keydown', close);
+  }, []);
+  return <>
+    <header className="mobile-header"><Link to={`/${query}`} className="brand"><span className="brand-mark"><CloudSun size={24} /></span><span>Bharat<span className="brand-light">Forecast</span></span></Link><button className="icon-button" aria-label={open ? 'Close navigation' : 'Open navigation'} aria-expanded={open} aria-controls="main-navigation" onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</button></header>
+    {open && <button className="nav-backdrop" aria-label="Close navigation" onClick={() => setOpen(false)} />}
+    <aside id="main-navigation" className={`sidebar ${open ? 'is-open' : ''}`}>
+      <Link to={`/${query}`} className="brand desktop-brand"><span className="brand-mark"><CloudSun size={26} strokeWidth={1.8} /></span><span>Bharat<span className="brand-light">Forecast</span><small>WEATHER, IN PERSPECTIVE.</small></span></Link>
+      <div className="workspace-label"><span className="india-dot" /> INDIA WORKSPACE <span className="version">BETA</span></div>
+      <span className="nav-caption">EXPLORE</span>
+      <nav className="main-nav" aria-label="Main navigation">
+        <NavLink end to={`/${query}`}><LayoutDashboard size={18} />Overview<ChevronRight className="nav-arrow" size={15} /></NavLink>
+        <NavLink to={`/forecast${query}`}><ChartNoAxesCombined size={18} />Forecast explorer<ChevronRight className="nav-arrow" size={15} /></NavLink>
+        <NavLink to={`/about${query}`}><Orbit size={18} />Our methodology<ChevronRight className="nav-arrow" size={15} /></NavLink>
+      </nav>
+      <div className="locations-nav"><span className="nav-caption">QUICK LOCATIONS</span>
+        {[['kolkata', 'Kolkata'], ['delhi', 'Delhi'], ['mumbai', 'Mumbai'], ['bengaluru', 'Bengaluru']].map(([id, name]) => {
+          const cityParams = new URLSearchParams(params); cityParams.set('location', id);
+          return <Link key={id} className={activeCity === id && location.pathname !== '/about' ? 'city-link selected' : 'city-link'} to={`${location.pathname === '/forecast' ? '/forecast' : '/'}?${cityParams}`}><MapPin size={15} />{name}{activeCity === id && <span className="city-dot" />}</Link>;
+        })}
       </div>
-
-      {/* Mobile menu */}
-      {mobileMenuOpen && (
-        <div className="sm:hidden border-t border-border bg-surface">
-          <div className="px-4 pt-2 pb-4 space-y-1">
-            <Link 
-              to="/" 
-              className={`block px-3 py-2 rounded-md text-base ${isActive("/") ? "bg-primary-light text-primary font-medium" : "text-text-secondary hover:bg-gray-50"}`}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Home
-            </Link>
-            <Link 
-              to="/forecast" 
-              className={`block px-3 py-2 rounded-md text-base ${isActive("/forecast") ? "bg-primary-light text-primary font-medium" : "text-text-secondary hover:bg-gray-50"}`}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Forecast
-            </Link>
-            <Link 
-              to="/about" 
-              className={`block px-3 py-2 rounded-md text-base ${isActive("/about") ? "bg-primary-light text-primary font-medium" : "text-text-secondary hover:bg-gray-50"}`}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              About
-            </Link>
-            <div className="px-3 py-2 mt-2 flex items-center gap-2 text-sm text-text-secondary">
-              <span className="w-2 h-2 rounded-full bg-status-success inline-block"></span>
-              Data services online
-            </div>
-          </div>
-        </div>
-      )}
-    </nav>
-  );
+      <div className="sidebar-bottom"><div className="blend-note"><span className="blend-note-icon"><Orbit size={21} /></span><h3>Many models.<br />One clearer picture.</h3><p>Physical and AI forecasts, brought together for India.</p><Link to={`/about${query}`}>Meet the Bharat Blend <ArrowUpRight size={14} /></Link></div><div className="sidebar-status"><FlaskConical size={14} /><span>Research prototype</span><span>v0.1</span></div></div>
+    </aside>
+  </>;
 }

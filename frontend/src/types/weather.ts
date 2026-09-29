@@ -83,4 +83,3 @@ export interface ModelComparisonResponse {
   models: ModelForecast[];
   variable: string;
 }
-
